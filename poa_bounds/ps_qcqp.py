@@ -130,11 +130,22 @@ def lambda_mu_ps_multi(
 
         status = int(model.Status)
         obj = float("nan")
-        if status in (GRB.OPTIMAL, GRB.SUBOPTIMAL, GRB.TIME_LIMIT):
+        bound = float("nan")
+        inc = float("nan")
+
+        try:
+            bound = float(model.ObjBound)
+        except Exception:
+            bound = float("nan")
+
+        if model.SolCount > 0:
             try:
-                obj = float(model.ObjVal)
+                inc = float(model.ObjVal)
             except Exception:
-                obj = float("nan")
+                inc = float("nan")
+
+        # Use the solver's global objective bound whenever available.
+        obj = bound if math.isfinite(bound) else inc
 
         details: Dict[str, Any] = {
             "mu": mu,
